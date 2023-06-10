@@ -19,26 +19,26 @@ class WebScraper:
             return None
 
         data_soup = soup(data_html.text, "html.parser")
-        question_container = data_soup.find_all('a', class_='card-link')
+        question_container = data_soup.find_all("a", class_="card-link")
 
         for question in question_container:
-            question = question.get('href')
+            question = question.get("href")
             results.append(question)
 
-        view_links = [link for link in results if link.endswith('/view/')]
+        view_links = [link for link in results if link.endswith("/view/")]
 
         for link in tqdm(view_links, desc="Scraping questions", unit="link"):
             url = f"https://www.collegenote.net{link}"
-            year = url.split('/')[-4]
-            batch = {'year': year, 'questions': []}
+            year = url.split("/")[-4]
+            batch = {"year": year, "questions": []}
 
             data_html = requests.get(url)
             data_soup = soup(data_html.text, "html.parser")
-            question_container = data_soup.find_all('div', class_='col-7')
+            question_container = data_soup.find_all("div", class_="col-7")
 
             for question in question_container:
-                questions = question.find_all('p')
-                batch['questions'].extend([q.text for q in questions])
+                questions = question.find_all("p")
+                batch["questions"].extend([q.text for q in questions])
 
             batches.append(batch)
 
@@ -48,9 +48,11 @@ class WebScraper:
         results = []
         data_html = requests.get(url)
         data_soup = soup(data_html.text, "html.parser")
-        question_container = data_soup.find_all('div', class_='qnbank_content')
-        for question in tqdm(question_container, desc="Scraping questions", unit="question"):
-            question = question.find_all('p')
+        question_container = data_soup.find_all("div", class_="qnbank_content")
+        for question in tqdm(
+            question_container, desc="Scraping questions", unit="question"
+        ):
+            question = question.find_all("p")
             for q in question:
                 results.append(q.text)
 
@@ -63,19 +65,13 @@ class WebScraper:
                 question_file.write(question + "\n\n")
 
     def write_to_file_collegenote(self, batches, selected_subject):
-        json_data = {
-            "subject": selected_subject,
-            "questions": []
-        }
+        json_data = {"subject": selected_subject, "questions": []}
 
         for batch in tqdm(batches, desc="Writing questions", unit="batch"):
-            year = batch['year']
-            questions = batch['questions']
-            year_data = {
-                "year": year,
-                "paragraphs": []
-            }
-            subQuestions = ['a', 'b', 'c', 'd', 'e']
+            year = batch["year"]
+            questions = batch["questions"]
+            year_data = {"year": year, "paragraphs": []}
+            subQuestions = ["a", "b", "c", "d", "e"]
             for question in questions:
                 if question.startswith(tuple(subQuestions)):
                     year_data["paragraphs"].append("\t" + question)
@@ -86,25 +82,25 @@ class WebScraper:
 
         json_str = json.dumps(json_data, indent=4)
 
-        with open('questions.json', 'w') as file:
+        with open("questions.json", "w") as file:
             file.write(json_str)
 
     def scrape_options(self):
         site_options = {
             "Hamro csit": "https://www.hamrocsit.com/",
-            "College Note": "https://www.collegenote.net/"
+            "College Note": "https://www.collegenote.net/",
         }
 
         site = TerminalMenu(list(site_options.keys())).show()
         site = list(site_options.keys())[site]
 
-        if (site == "Hamro csit"):
+        if site == "Hamro csit":
             subjects = {
                 "Theory of Computation": "toc",
                 "Computer Networks": "cn",
                 "Operating Systems": "os",
                 "Database Management System": "dbms",
-                "Artificial Intelligence": "ai"
+                "Artificial Intelligence": "ai",
             }
 
             print("Enter the subject which you want to scrape: ")
@@ -126,7 +122,7 @@ class WebScraper:
                 "Computer Networks": "pastpapers/TU/CSIT/31/computer-networks",
                 "Operating Systems": "pastpapers/TU/CSIT/33/operating-systems",
                 "Database Management System": "pastpapers/TU/CSIT/32/database-management-system",
-                "Artificial Intelligence": "pastpapers/TU/CSIT/30/artificial-intelligence"
+                "Artificial Intelligence": "pastpapers/TU/CSIT/30/artificial-intelligence",
             }
 
             # Display the menu and get user's choice
@@ -142,7 +138,7 @@ class WebScraper:
         url, site, selected_subject = self.scrape_options()
         print(url)
         print("Scraping questions from", url)
-        if (site == "Hamro csit"):
+        if site == "Hamro csit":
             questions = self.get_all_questions_hamrocsit(url)
             self.write_to_file_hamrocsit(questions, selected_subject)
             return selected_subject

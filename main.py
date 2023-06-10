@@ -1,7 +1,12 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, abort
 import json
 
 app = Flask(__name__)
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
 
 
 @app.route("/")
@@ -11,7 +16,11 @@ def home():
 
 @app.route("/<subject>")
 def get_page(subject):
-    return render_template(f"{subject}.html")
+    subjects = ["toc", "cn", "ai", "dbms", "os"]
+    if subject.lower in subjects:
+        return render_template(f"{subject}.html")
+    else:
+        abort(404)
 
 
 @app.route("/unitwise/<subject>")
@@ -32,6 +41,7 @@ def get_unitwise_questions(subject):
     print(subject)
     with open(f"json/unitwise/{subject}.json") as file:
         questions_data = json.load(file)
+
     return jsonify(questions_data)
 
 
@@ -48,4 +58,4 @@ def favicon():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
